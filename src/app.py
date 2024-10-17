@@ -21,8 +21,12 @@ else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-MIGRATE = Migrate(app, db)
+# Inicializar la base de datos
 db.init_app(app)
+
+# Inicializar Flask-Migrate
+migrate = Migrate(app, db)
+
 CORS(app)
 setup_admin(app)
 
@@ -38,14 +42,12 @@ def sitemap():
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
-
     response_body = {
         "msg": "Hello, this is your GET /user response "
     }
-
     return jsonify(response_body), 200
 
-# this only runs if `$ python src/app.py` is executed
+# Este bloque solo se ejecuta si el archivo es ejecutado directamente
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
     app.run(host='0.0.0.0', port=PORT, debug=False)
