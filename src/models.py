@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Planet(db.Model):
+class Planets(db.Model):
     __tablename__ = 'planets'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -25,7 +25,7 @@ class Planet(db.Model):
             "climate": self.climate
         }
 
-class Vehicle(db.Model):
+class Vehicles(db.Model):
     __tablename__ = 'vehicles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -46,7 +46,7 @@ class Vehicle(db.Model):
             "manufacturer": self.manufacturer
         }
 
-class Character(db.Model):
+class Characters(db.Model):
     __tablename__ = 'characters'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -71,7 +71,7 @@ class Character(db.Model):
             "hair_color": self.hair_color
         }
 
-class User(db.Model):
+class Users(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(250))
@@ -80,6 +80,7 @@ class User(db.Model):
     password = db.Column(db.String(50))
     fecha_ingreso = db.Column(db.String(250))
     is_active = db.Column(db.Boolean(), default=True, unique=False, nullable=False)
+    
     favorite_characters = db.relationship('FavoriteCharacter', back_populates='user')
     favorite_vehicles = db.relationship('FavoriteVehicle', back_populates='user')
     favorite_planets = db.relationship('FavoritePlanet', back_populates='user')
@@ -110,34 +111,37 @@ class User(db.Model):
         return result
 
 class FavoriteCharacter(db.Model):
-    __tablename__ = 'favoritecharacters'
+    __tablename__ = 'favorite_characters'
     id = db.Column(db.Integer, primary_key=True)
-    character_id = db.Column(db.Integer, db.ForeignKey('characters.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    character = db.relationship(Character)
-    user = db.relationship(User)
+    character_id = db.Column(db.Integer, db.ForeignKey('characters.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    character = db.relationship(Characters)
+    user = db.relationship(Users)
 
     def __repr__(self):
         return '<FavoriteCharacter %r>' % self.id
 
 class FavoriteVehicle(db.Model):
-    __tablename__ = 'favoritevehicles'
+    __tablename__ = 'favorite_vehicles'
     id = db.Column(db.Integer, primary_key=True)
-    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    vehicle = db.relationship(Vehicle)
-    user = db.relationship(User)
+    vehicle_id = db.Column(db.Integer, db.ForeignKey('vehicles.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    vehicle = db.relationship(Vehicles)
+    user = db.relationship(Users)
 
     def __repr__(self):
         return '<FavoriteVehicle %r>' % self.id
 
 class FavoritePlanet(db.Model):
-    __tablename__ = 'favoriteplanets'
+    __tablename__ = 'favorite_planets'
     id = db.Column(db.Integer, primary_key=True)
-    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    planet = db.relationship(Planet)
-    user = db.relationship(User)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    planet = db.relationship(Planets)
+    user = db.relationship(Users)
 
     def __repr__(self):
         return '<FavoritePlanet %r>' % self.id
