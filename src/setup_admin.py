@@ -6,7 +6,9 @@ class SecureUserView(ModelView):
 
     column_exclude_list = ['password']
 
+
     form_excluded_columns = ['password']
+
 
     def _password_formatter(view, context, model, name):
         return '*****'  
