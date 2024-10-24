@@ -147,6 +147,42 @@ def remove_favorite_character(people_id):
 
     return jsonify({'message': 'Favorite character removed successfully!'}), 200
 
+@app.route('/people', methods=['GET'])
+def get_all_people():
+    """List all characters (people)"""
+    people = Characters.query.all()
+    all_people = [person.serialize() for person in people]
+    
+    return jsonify(all_people), 200
+
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_single_person(people_id):
+    """Get a single character by ID"""
+    person = Characters.query.get(people_id)
+    
+    if person is None:
+        return jsonify({'error': 'Character not found'}), 404
+    
+    return jsonify(person.serialize()), 200
+
+@app.route('/planets', methods=['GET'])
+def get_all_planets():
+    """List all planets"""
+    planets = Planets.query.all()
+    all_planets = [planet.serialize() for planet in planets]
+    
+    return jsonify(all_planets), 200
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_single_planet(planet_id):
+    """Get a single planet by ID"""
+    planet = Planets.query.get(planet_id)
+    
+    if planet is None:
+        return jsonify({'error': 'Planet not found'}), 404
+    
+    return jsonify(planet.serialize()), 200
+
 
 @app.route('/')
 def sitemap():
