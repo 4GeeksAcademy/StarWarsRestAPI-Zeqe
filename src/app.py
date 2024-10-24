@@ -30,6 +30,9 @@ setup_admin(app)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
+@app.route('/')
+def sitemap():
+    return generate_sitemap(app)
 
 @app.route('/users/favorites', methods=['GET'])
 def list_favorites():
@@ -175,18 +178,33 @@ def get_all_planets():
 
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def get_single_planet(planet_id):
-    """Get a single planet by ID"""
+    """Get a single vehicle by ID"""
     planet = Planets.query.get(planet_id)
     
     if planet is None:
-        return jsonify({'error': 'Planet not found'}), 404
+        return jsonify({'error': 'Planets not found'}), 404
     
     return jsonify(planet.serialize()), 200
 
+@app.route('/vehicles', methods=['GET'])
+def get_all_vehicles():
+    """List all vehicles"""
+    vehicles = Vehicles.query.all()
+    all_vehicles = [vehicle.serialize() for vehicle in vehicles]
+    
+    return jsonify(all_vehicles), 200
 
-@app.route('/')
-def sitemap():
-    return generate_sitemap(app)
+@app.route('/vehicles/<int:vehicle_id>', methods=['GET'])
+def get_single_vehicle(vehicle_id):
+    """Get a single vehicle by ID"""
+    vehicle = Vehicles.query.get(vehicle_id)
+    
+    if vehicle is None:
+        return jsonify({'error': 'Vehicle not found'}), 404
+    
+    return jsonify(vehicle.serialize()), 200
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
