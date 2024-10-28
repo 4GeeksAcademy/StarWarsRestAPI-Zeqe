@@ -35,23 +35,25 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-# Datos simulados para usuarios
-users = [
-    {
-        "id": 1,
-        "nombre": "Ezequiel",
-        "apellido": "Bellino",
-        "email": "ezebellino@hotmail.com",
-        "fecha_ingreso": "10/10/2024",
-        "username": "ezebellino",
-        "is_active": True
-    }
-]
-
-# Endpoint para obtener usuarios
 @app.route('/users', methods=['GET'])
 def get_users():
-    return jsonify(users)
+    # Consulta todos los usuarios en la base de datos
+    users = Users.query.all()
+    
+    # Usuarios en un formato JSON
+    users_data = [
+        {
+            "id": user.id,
+            "nombre": user.nombre,
+            "apellido": user.apellido,
+            "email": user.email,
+            "fecha_ingreso": user.fecha_ingreso,
+            "username": user.username,
+            "is_active": user.is_active
+        } for user in users
+    ]
+    
+    return jsonify(users_data)
 
 @app.route('/users/favorites', methods=['GET'])
 def get_user_favorites():
