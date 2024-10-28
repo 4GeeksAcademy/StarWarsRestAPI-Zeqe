@@ -76,7 +76,8 @@ class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(250))
     apellido = db.Column(db.String(250))
-    email = db.Column(db.String(250))
+    email = db.Column(db.String(250), unique=True)
+    username = db.Column(db.String(50), unique=True)  # Campo de username único
     password = db.Column(db.String(50))
     fecha_ingreso = db.Column(db.String(250))
     is_active = db.Column(db.Boolean(), default=True, unique=False, nullable=False)
@@ -86,11 +87,12 @@ class Users(db.Model):
     favorite_planets = db.relationship('FavoritePlanet', back_populates='user')
 
     def __repr__(self):
-        return '<User %r>' % self.email
+        return f'<User {self.username}>'
 
     def serialize(self):
         return {
             "id": self.id,
+            "username": self.username,
             "email": self.email,
             "nombre": self.nombre,
             "apellido": self.apellido,
@@ -99,16 +101,16 @@ class Users(db.Model):
         }
 
     def serialize_favorites(self):
-        result = {}
-        result['favorites'] = {}
-        result["user"] = self.serialize()
-        if len(self.favorite_characters) > 0:
-            result["favorites"]["characters"] = [character.character.serialize() for character in self.favorite_characters] 
-        if len(self.favorite_vehicles) > 0:
-            result["favorites"]["vehicles"] = [vehicle.vehicle.serialize() for vehicle in self.favorite_vehicles] 
-        if len(self.favorite_planets) > 0:
-            result["favorites"]["planets"] = [planet.planet.serialize() for planet in self.favorite_planets] 
+        result = {
+            "user": self.serialize(),
+            "favorites": {
+                "characters": [fav.character.serialize() for fav in self.favorite_characters],
+                "vehicles": [fav.vehicle.serialize() for fav in self.favorite_vehicles],
+                "planets": [fav.planet.serialize() for fav in self.favorite_planets],
+            }
+        }
         return result
+
 
 class FavoriteCharacter(db.Model):
     __tablename__ = 'favorite_characters'

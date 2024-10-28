@@ -1,8 +1,9 @@
 """
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
-import os
-from flask import Flask, jsonify, request
+import os, random
+import requests
+from flask import Flask, jsonify, abort, request
 from flask_migrate import Migrate
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
@@ -34,175 +35,100 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+# Datos simulados para usuarios
+users = [
+    {
+        "id": 1,
+        "nombre": "Ezequiel",
+        "apellido": "Bellino",
+        "email": "ezebellino@hotmail.com",
+        "fecha_ingreso": "10/10/2024",
+        "username": "ezebellino",
+        "is_active": True
+    }
+]
+
+# Endpoint para obtener usuarios
+@app.route('/users', methods=['GET'])
+def get_users():
+    return jsonify(users)
+
 @app.route('/users/favorites', methods=['GET'])
-def list_favorites():
-    current_user_id = request.args.get('user_id')  
+def get_user_favorites():
+    username = "ezebellino" 
 
-    if not current_user_id:
-        return jsonify({'error': 'User not authenticated'}), 401
+    # Acá genero 3 elementos aleatorios
+    favorite_items = []
+    for _ in range(3):
+        random_type = random.choice(["people", "vehicles", "planets"])  # Tipo aleatorio
+        random_id = random.randint(1, 82)  # ID aleatorio (ajusta el rango según SWAPI)
+        swapi_url = f"https://swapi.dev/api/{random_type}/{random_id}"
+        response = requests.get(swapi_url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            item_type = "character" if random_type == "people" else random_type[:-1]  # Formato de tipo
+            favorite_items.append({
+                "name": data.get("name"),
+                "type": item_type
+            })
 
-    user = Users.query.get(current_user_id)
-    if user is None:
-        return jsonify({'error': 'User not found'}), 404
-
-    return jsonify(user.serialize_favorites()), 200
-
-
-@app.route('/favorite/vehicles/<int:vehicle_id>', methods=['POST'])
-def add_favorite_vehicle(vehicle_id):
-    current_user_id = request.args.get('user_id')  
-    if not current_user_id:
-        return jsonify({'error': 'User not authenticated'}), 401
-    vehicle = Vehicles.query.get(vehicle_id)
-    if vehicle is None:
-        return jsonify({'error': 'Vehicle not found'}), 404
-
-    new_favorite = FavoriteVehicle(user_id=current_user_id, vehicle_id=vehicle_id)
-    db.session.add(new_favorite)
-    db.session.commit()
-
-    return jsonify({'message': 'Favorite vehicle added successfully!'}), 201
-
-@app.route('/favorite/vehicles/<int:vehicle_id>', methods=['DELETE'])
-def remove_favorite_vehicle(vehicle_id):
-    current_user_id = request.args.get('user_id')
-
-    if not current_user_id:
-        return jsonify({'error': 'User not authenticated'}), 401
-
-    favorite = FavoriteVehicle.query.filter_by(user_id=current_user_id, vehicle_id=vehicle_id).first()
-
-    if favorite is None:
-        return jsonify({'error': 'Favorite vehicle not found'}), 404
-
-    db.session.delete(favorite)
-    db.session.commit()
-
-    return jsonify({'message': 'Favorite vehicle removed successfully!'}), 200
+    # Devuelvo los elementos favoritos en formato JSON
+    return jsonify({
+        "username": username,
+        "favorites": favorite_items
+    })
 
 
-@app.route('/favorite/planets/<int:planet_id>', methods=['POST'])
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(planet_id):
-    current_user_id = request.args.get('user_id') 
-
+    current_user_id = request.args.get('user_id')  
     if not current_user_id:
         return jsonify({'error': 'User not authenticated'}), 401
-
     planet = Planets.query.get(planet_id)
     if planet is None:
         return jsonify({'error': 'Planet not found'}), 404
-
     new_favorite = FavoritePlanet(user_id=current_user_id, planet_id=planet_id)
     db.session.add(new_favorite)
     db.session.commit()
-
     return jsonify({'message': 'Favorite planet added successfully!'}), 201
 
-@app.route('/favorite/planets/<int:planet_id>', methods=['DELETE'])
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def remove_favorite_planet(planet_id):
     current_user_id = request.args.get('user_id')
-
     if not current_user_id:
         return jsonify({'error': 'User not authenticated'}), 401
-
     favorite = FavoritePlanet.query.filter_by(user_id=current_user_id, planet_id=planet_id).first()
-
     if favorite is None:
         return jsonify({'error': 'Favorite planet not found'}), 404
-
     db.session.delete(favorite)
     db.session.commit()
-
     return jsonify({'message': 'Favorite planet removed successfully!'}), 200
-
 
 @app.route('/favorite/people/<int:people_id>', methods=['POST'])
 def add_favorite_character(people_id):
     current_user_id = request.args.get('user_id')  
-
     if not current_user_id:
         return jsonify({'error': 'User not authenticated'}), 401
-
     character = Characters.query.get(people_id)
     if character is None:
         return jsonify({'error': 'Character not found'}), 404
-
     new_favorite = FavoriteCharacter(user_id=current_user_id, character_id=people_id)
     db.session.add(new_favorite)
     db.session.commit()
-
     return jsonify({'message': 'Favorite character added successfully!'}), 201
 
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def remove_favorite_character(people_id):
     current_user_id = request.args.get('user_id')
-
     if not current_user_id:
         return jsonify({'error': 'User not authenticated'}), 401
-
     favorite = FavoriteCharacter.query.filter_by(user_id=current_user_id, character_id=people_id).first()
-
     if favorite is None:
         return jsonify({'error': 'Favorite character not found'}), 404
-
     db.session.delete(favorite)
     db.session.commit()
-
     return jsonify({'message': 'Favorite character removed successfully!'}), 200
-
-@app.route('/people', methods=['GET'])
-def get_all_people():
-    """List all characters (people)"""
-    people = Characters.query.all()
-    all_people = [person.serialize() for person in people]
-    
-    return jsonify(all_people), 200
-
-@app.route('/people/<int:people_id>', methods=['GET'])
-def get_single_person(people_id):
-    """Get a single character by ID"""
-    person = Characters.query.get(people_id)
-    
-    if person is None:
-        return jsonify({'error': 'Character not found'}), 404
-    
-    return jsonify(person.serialize()), 200
-
-@app.route('/planets', methods=['GET'])
-def get_all_planets():
-    """List all planets"""
-    planets = Planets.query.all()
-    all_planets = [planet.serialize() for planet in planets]
-    
-    return jsonify(all_planets), 200
-
-@app.route('/planets/<int:planet_id>', methods=['GET'])
-def get_single_planet(planet_id):
-    """Get a single vehicle by ID"""
-    planet = Planets.query.get(planet_id)
-    
-    if planet is None:
-        return jsonify({'error': 'Planets not found'}), 404
-    
-    return jsonify(planet.serialize()), 200
-
-@app.route('/vehicles', methods=['GET'])
-def get_all_vehicles():
-    """List all vehicles"""
-    vehicles = Vehicles.query.all()
-    all_vehicles = [vehicle.serialize() for vehicle in vehicles]
-    
-    return jsonify(all_vehicles), 200
-
-@app.route('/vehicles/<int:vehicle_id>', methods=['GET'])
-def get_single_vehicle(vehicle_id):
-    """Get a single vehicle by ID"""
-    vehicle = Vehicles.query.get(vehicle_id)
-    
-    if vehicle is None:
-        return jsonify({'error': 'Vehicle not found'}), 404
-    
-    return jsonify(vehicle.serialize()), 200
 
 
 
