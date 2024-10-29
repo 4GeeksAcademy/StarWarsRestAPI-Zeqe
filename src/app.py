@@ -61,7 +61,8 @@ def get_all_people():
 
     characters_data = [
         {
-            'name':characters.name,            
+            'name':character.name,
+            'id': character.id,            
             'description': character.description,
             'eye_color': character.eye_color,
             'birth_year': character.birth_year,
@@ -72,6 +73,26 @@ def get_all_people():
     ]
     return jsonify(characters_data), 200
 
+@app.route('/people/<int:people_id>', methods=['GET'])
+def get_people_by_id(people_id):
+    character = Characters.query.get(people_id)
+    
+    if character is None:
+        abort(404, description="Character not found")
+    
+    # Serializar los datos 
+    people_data = {
+            'name':character.name,            
+            'description': character.description,
+            'eye_color': character.eye_color,
+            'birth_year': character.birth_year,
+            'gender': character.gender,
+            'hair_color': character.hair_color
+    }
+    
+    # Devolver los datos en formato JSON
+    return jsonify(people_data), 200
+
 @app.route('/planets', methods=['GET'])
 def get_all_planets():
     # Consultar todos los planetas en la base de datos
@@ -80,6 +101,7 @@ def get_all_planets():
     planets_data = [
         {
             'name': planet.name,
+            'id': planet.id,
             'description': planet.description,
             'gravity': planet.gravity,
             'population': planet.population,
@@ -91,6 +113,24 @@ def get_all_planets():
     # Devolver los datos en formato JSON
     return jsonify(planets_data), 200
 
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_planet_by_id(planet_id):
+    planet = Planets.query.get(planet_id)
+    
+    if planet is None:
+        abort(404, description="Planet not found")
+    
+    # Serializar los datos 
+    planet_data = {
+            'name': planet.name,
+            'gravity': planet.gravity,
+            'population': planet.population,
+            'climate': planet.climate
+    }
+    
+    # Devolver los datos en formato JSON
+    return jsonify(planet_data), 200
+
 # Ruta para obtener todos los vehículos
 @app.route('/vehicles', methods=['GET'])
 def get_all_vehicles():
@@ -101,6 +141,7 @@ def get_all_vehicles():
     vehicles_data = [
         {
             'name': vehicle.name,
+            'id': vehicle.id,
             'description': vehicle.description,
             'model': vehicle.model,
             'manufacturer': vehicle.manufacturer
@@ -115,7 +156,7 @@ def get_all_vehicles():
 @app.route('/vehicles/<int:vehicle_id>', methods=['GET'])
 def get_vehicle_by_id(vehicle_id):
     # Consultar el vehículo por su ID en la base de datos
-    vehicle = Vehicle.query.get(vehicle_id)
+    vehicle = Vehicles.query.get(vehicle_id)
     
     # Verificar si el vehículo existe
     if vehicle is None:
