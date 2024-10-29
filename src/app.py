@@ -55,6 +55,83 @@ def get_users():
     
     return jsonify(users_data)
 
+@app.route('/people', methods=['GET'])
+def get_all_people():
+    characters = Characters.query.all()
+
+    characters_data = [
+        {
+            'name':characters.name,            
+            'description': character.description,
+            'eye_color': character.eye_color,
+            'birth_year': character.birth_year,
+            'gender': character.gender,
+            'hair_color': character.hair_color
+        }
+        for character in characters
+    ]
+    return jsonify(characters_data), 200
+
+@app.route('/planets', methods=['GET'])
+def get_all_planets():
+    # Consultar todos los planetas en la base de datos
+    planets = Planets.query.all()
+    #Serializer
+    planets_data = [
+        {
+            'name': planet.name,
+            'description': planet.description,
+            'gravity': planet.gravity,
+            'population': planet.population,
+            'climate': planet.climate
+        }
+        for planet in planets
+    ]
+    
+    # Devolver los datos en formato JSON
+    return jsonify(planets_data), 200
+
+# Ruta para obtener todos los vehículos
+@app.route('/vehicles', methods=['GET'])
+def get_all_vehicles():
+    # Consultar todos los vehículos en la base de datos
+    vehicles = Vehicles.query.all()
+    
+    # Serializar los datos
+    vehicles_data = [
+        {
+            'name': vehicle.name,
+            'description': vehicle.description,
+            'model': vehicle.model,
+            'manufacturer': vehicle.manufacturer
+        }
+        for vehicle in vehicles
+    ]
+    
+    # Devolver los datos en formato JSON
+    return jsonify(vehicles_data), 200
+
+# Ruta para obtener un vehículo por ID
+@app.route('/vehicles/<int:vehicle_id>', methods=['GET'])
+def get_vehicle_by_id(vehicle_id):
+    # Consultar el vehículo por su ID en la base de datos
+    vehicle = Vehicle.query.get(vehicle_id)
+    
+    # Verificar si el vehículo existe
+    if vehicle is None:
+        abort(404, description="Vehicle not found")
+    
+    # Serializar los datos del vehículo encontrado
+    vehicle_data = {
+        'name': vehicle.name,
+        'description': vehicle.description,
+        'model': vehicle.model,
+        'manufacturer': vehicle.manufacturer
+    }
+    
+    # Devolver los datos en formato JSON
+    return jsonify(vehicle_data), 200
+
 @app.route('/users/favorites', methods=['GET'])
 def get_user_favorites():
     username = "ezebellino" 
