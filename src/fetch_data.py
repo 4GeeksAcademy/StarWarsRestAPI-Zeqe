@@ -16,7 +16,7 @@ def fetch_characters():
     for person in data['results']:
         new_character = Character(
             name=person['name'],
-            description="Unknown",  # Puedes mapearlo o dejarlo así
+            #description="Unknown",  # Puedes mapearlo o dejarlo así
             eye_color=person.get('eye_color', "Unknown"),
             birth_year=person.get('birth_year', "Unknown"),
             gender=person.get('gender', "Unknown"),
@@ -36,7 +36,7 @@ def fetch_planets():
     for planet in data['results']:
         new_planet = Planet(
             name=planet['name'],
-            description=planet.get('description', "Unknown"),
+            description=planet.get('description', "  "),
             gravity=planet.get('gravity', "Unknown"),
             population=planet.get('population', "Unknown"),
             climate=planet.get('climate', "Unknown"),
@@ -55,7 +55,7 @@ def fetch_vehicles():
     for vehicle in data['results']:
         new_vehicle = Vehicle(
             name=vehicle['name'],
-            description=vehicle.get('description', "Unknown"),
+            id=vehicle.get('id', "Unknown"),
             model=vehicle.get('model', "Unknown"),
             manufacturer=vehicle.get('manufacturer', "Unknown"),
         )
